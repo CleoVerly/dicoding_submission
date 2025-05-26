@@ -10,7 +10,7 @@ from utils.transform import (
     clean_size,
     clean_gender,
     transform_data,
-    USD_TO_IDR_RATE # Impor konstanta jika digunakan dalam perbandingan
+    USD_TO_IDR_RATE
 )
 
 # --- Tes untuk Fungsi Pembersihan Individual ---
@@ -56,7 +56,6 @@ def test_clean_size():
     assert clean_size("Size: XXL") == "XXL"
     assert clean_size("M") == "M"
     assert clean_size(None) is None
-    # Disesuaikan dengan implementasi utils/transform.py yang return None untuk string kosong
     assert clean_size("  ") is None
 
 def test_clean_gender():
@@ -64,7 +63,6 @@ def test_clean_gender():
     assert clean_gender("  Gender: Unisex  ") == "Unisex"
     assert clean_gender("Women") == "Women"
     assert clean_gender(None) is None
-    # Disesuaikan dengan implementasi utils/transform.py yang return None untuk string kosong
     assert clean_gender("   ") is None
 
 # --- Tes untuk Fungsi transform_data ---
@@ -103,7 +101,6 @@ def test_transform_data_removes_unknown_product(sample_raw_df):
 
 def test_transform_data_handles_price_unavailable(sample_raw_df):
     df_transformed = transform_data(sample_raw_df.copy())
-    # Baris dengan "Price Unavailable" harusnya di-drop karena price jadi None, dan dropna menghapusnya.
     assert df_transformed['price'].isnull().sum() == 0
 
 def test_transform_data_converts_price_to_idr(sample_raw_df):
@@ -191,7 +188,6 @@ def test_transform_data_astype_exception_handling(sample_raw_df):
     
     with pytest.raises(Exception):
         with patch.object(pd.DataFrame, 'astype', side_effect=ValueError("Simulated astype error")):
-            # Perlu data yang akan sampai ke tahap astype
             df_valid_for_astype_test = pd.DataFrame({
                 'title': ["Valid"], 'price': [160000.0], 'rating': [4.0], 
                 'colors': [3], 'size': ["M"], 'gender': ["Men"], 

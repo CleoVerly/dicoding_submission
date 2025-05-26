@@ -1,10 +1,7 @@
-# tests/test_load.py
-
 import pytest
 import pandas as pd
 import os
 
-# Impor fungsi dari utils.load yang akan diuji
 from utils.load import load_to_csv
 
 @pytest.fixture
@@ -12,7 +9,7 @@ def sample_transformed_df():
     """Fixture untuk DataFrame sampel yang sudah bersih."""
     data = {
         'title': ["T-shirt Keren", "Jaket Bagus", "Celana Panjang"],
-        'price': [400000.0, 815840.0, 250000.0], # Contoh harga dalam IDR
+        'price': [400000.0, 815840.0, 250000.0],
         'rating': [4.5, 4.0, 3.0],
         'colors': [3, 5, 1],
         'size': ["L", "XL", "S"],
@@ -66,11 +63,7 @@ def test_load_to_csv_none_dataframe(tmp_path):
     assert not output_file_path.exists(), "File CSV seharusnya tidak dibuat untuk DataFrame None."
 
 def test_load_to_csv_with_subdirectories(sample_transformed_df, tmp_path):
-    """
-    Tes apakah load_to_csv bisa membuat file di dalam subdirektori
-    dan membuat subdirektori tersebut jika belum ada.
-    """
-    output_dir = tmp_path / "data_output" / "files" # Contoh subdirektori
+    output_dir = tmp_path / "data_output" / "files"
     output_filename = "products_in_subdir.csv"
     output_file_path = output_dir / output_filename
 

@@ -89,7 +89,6 @@ def transform_data(df_raw):
     print(f"Memulai transformasi data. Jumlah data mentah: {len(df_raw)}")
     df = df_raw.copy()
 
-    # Pastikan semua kolom yang diharapkan ada, jika tidak, tambahkan dengan None
     expected_cols_from_extract = ['title', 'price', 'rating', 'colors', 'size', 'gender', 'timestamp']
     for col in expected_cols_from_extract:
         if col not in df.columns:
@@ -103,46 +102,38 @@ def transform_data(df_raw):
     if df.empty: return pd.DataFrame() # Jika semua data invalid
 
     # 2. Konversi Harga ke IDR
-    df['price'] = df['price'].apply(convert_price_to_idr) # [cite: 19, 28, 34]
+    df['price'] = df['price'].apply(convert_price_to_idr)
 
     # 3. Bersihkan kolom Rating, Colors, Size, Gender
-    df['rating'] = df['rating'].apply(clean_rating) # [cite: 35]
-    df['colors'] = df['colors'].apply(clean_colors) # [cite: 36]
-    df['size'] = df['size'].apply(clean_size) # [cite: 36]
-    df['gender'] = df['gender'].apply(clean_gender) # [cite: 37]
+    df['rating'] = df['rating'].apply(clean_rating)
+    df['colors'] = df['colors'].apply(clean_colors)
+    df['size'] = df['size'].apply(clean_size)
+    df['gender'] = df['gender'].apply(clean_gender)
     
-    # 4. Penanganan Duplikat [cite: 20, 29]
-    # Duplikasi berdasarkan semua kolom produk inti. Timestamp diabaikan untuk deduplikasi jika produk sama.
+    # 4. Penanganan Duplikat
     product_cols = ['title', 'price', 'rating', 'colors', 'size', 'gender']
     df.drop_duplicates(subset=product_cols, keep='first', inplace=True)
     print(f"Data setelah menghapus duplikat: {len(df)}")
     if df.empty: return pd.DataFrame()
 
-    # 5. Penanganan Nilai Hilang (Null/NaN) [cite: 20, 29]
-    # Studi kasus menyatakan "Data yang dihasilkan tidak boleh memiliki nilai null."
-    # Hapus baris yang memiliki NaN di kolom-kolom produk inti.
+    # 5. Penanganan Nilai Hilang (Null/NaN)
     df.dropna(subset=product_cols, inplace=True)
     print(f"Data setelah menghapus baris dengan nilai null pada kolom produk inti: {len(df)}")
     if df.empty: return pd.DataFrame()
     
-    # 6. Konversi Tipe Data Final [cite: 20]
-    # Sesuai ekspektasi (berdasarkan common practice dan rubrik yang disebutkan).
+    # 6. Konversi Tipe Data Final
     try:
         df = df.astype({
-            'title': 'object', # string
-            'price': 'float64', # [cite: 34]
-            'rating': 'float64', # [cite: 35]
-            'colors': 'int64', # karena sudah di-dropna, harusnya bisa jadi int [cite: 36]
-            'size': 'object', # string [cite: 36]
-            'gender': 'object', # string [cite: 37]
-            'timestamp': 'object' # string (atau bisa datetime64 jika diperlukan)
+            'title': 'object',
+            'price': 'float64',
+            'rating': 'float64',
+            'colors': 'int64',
+            'size': 'object',
+            'gender': 'object',
+            'timestamp': 'object'
         })
     except Exception as e:
         print(f"Error saat konversi tipe data final: {e}")
-        # Jika ada error, mungkin ada NaN yang lolos atau tipe data tidak sesuai
-        # Untuk memastikan, kita bisa cek info df sebelum error
-        # df.info()
-        # return pd.DataFrame() # Kembalikan DataFrame kosong jika konversi gagal total
 
     # Reset index setelah dropna dan drop_duplicates
     df.reset_index(drop=True, inplace=True)

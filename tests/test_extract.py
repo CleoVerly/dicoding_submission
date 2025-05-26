@@ -1,13 +1,10 @@
-# tests/test_extract.py
-
 import pytest
 import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
 from unittest.mock import patch, MagicMock, ANY
-import requests # Pastikan ini diimpor
+import requests
 
-# Impor fungsi dari utils.extract yang akan diuji
 from utils.extract import scrape_page, extract_product_details, extract_data_from_website
 
 # --- Tes untuk scrape_page ---
@@ -157,7 +154,7 @@ def test_extract_data_from_website_successful_run(mock_extract_details, mock_scr
         {"title": "Product 2", "price": "$20", "rating": "4/5", "colors": "2 Colors", "size": "M", "gender": "Women"}
     ]
 
-    with patch('utils.extract.MAX_PAGES', 2): # Uji dengan 2 halaman
+    with patch('utils.extract.MAX_PAGES', 2):
         df = extract_data_from_website()
 
     assert not df.empty
@@ -169,19 +166,19 @@ def test_extract_data_from_website_successful_run(mock_extract_details, mock_scr
 
 @patch('utils.extract.scrape_page')
 def test_extract_data_from_website_all_pages_fail_to_scrape(mock_scrape_page):
-    mock_scrape_page.return_value = None # Semua halaman gagal di-scrape
+    mock_scrape_page.return_value = None
 
-    with patch('utils.extract.MAX_PAGES', 3): # Uji dengan 3 halaman
+    with patch('utils.extract.MAX_PAGES', 3):
         df = extract_data_from_website()
 
     assert df.empty
-    assert mock_scrape_page.call_count == 3 # Pastikan semua halaman dicoba
+    assert mock_scrape_page.call_count == 3
 
 @patch('utils.extract.scrape_page')
 def test_extract_data_from_website_no_product_cards_on_any_page(mock_scrape_page):
     mock_soup = MagicMock(spec=BeautifulSoup)
-    mock_soup.find_all.return_value = [] # Tidak ada kartu produk ditemukan
-    mock_scrape_page.return_value = mock_soup # Semua halaman mengembalikan soup tanpa kartu
+    mock_soup.find_all.return_value = []
+    mock_scrape_page.return_value = mock_soup
 
     with patch('utils.extract.MAX_PAGES', 2):
         df = extract_data_from_website()
@@ -202,21 +199,18 @@ def test_extract_data_from_website_all_details_extraction_fail(mock_extract_deta
     with patch('utils.extract.MAX_PAGES', 1):
         df = extract_data_from_website()
 
-    assert df.empty # Tidak ada data yang berhasil diekstrak
-    assert mock_extract_details.call_count == 2 # Fungsi detail dipanggil untuk setiap kartu
+    assert df.empty
+    assert mock_extract_details.call_count == 2
 
 @patch('utils.extract.scrape_page')
 @patch('utils.extract.extract_product_details')
 def test_extract_data_from_website_partial_scrape_and_extract_success(mock_extract_details, mock_scrape_page):
-    # Halaman 1: scrape berhasil, 2 kartu, 1 detail berhasil, 1 detail gagal
+
     mock_soup_page1 = MagicMock(spec=BeautifulSoup)
     mock_card1_p1 = BeautifulSoup('<div class="collection-card">P1C1</div>', 'html.parser').div
     mock_card2_p1 = BeautifulSoup('<div class="collection-card">P1C2</div>', 'html.parser').div
     mock_soup_page1.find_all.return_value = [mock_card1_p1, mock_card2_p1]
     
-    # Halaman 2: scrape gagal
-    
-    # Halaman 3: scrape berhasil, 1 kartu, detail berhasil
     mock_soup_page3 = MagicMock(spec=BeautifulSoup)
     mock_card1_p3 = BeautifulSoup('<div class="collection-card">P3C1</div>', 'html.parser').div
     mock_soup_page3.find_all.return_value = [mock_card1_p3]
@@ -233,7 +227,7 @@ def test_extract_data_from_website_partial_scrape_and_extract_success(mock_extra
     assert len(df) == 2
     assert df['title'].tolist() == ["Prod1", "Prod3"]
     assert mock_scrape_page.call_count == 3
-    assert mock_extract_details.call_count == 3 # (P1C1, P1C2, P3C1)
+    assert mock_extract_details.call_count == 3
     
     # Cek timestamp ada di semua baris yang berhasil
     assert 'timestamp' in df.columns
