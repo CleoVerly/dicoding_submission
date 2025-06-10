@@ -88,29 +88,30 @@ Langkah-langkah persiapan data yang dilakukan bertujuan untuk membersihkan, ment
 * **Konversi Tipe Data**: Mengubah kolom `release_date` dari tipe `object` menjadi format `datetime` untuk analisis berbasis waktu jika diperlukan di masa depan.
 * **Penggabungan Fitur (Feature Engineering)**: Membuat satu fitur utama bernama `content` dengan menggabungkan teks dari kolom `genres`, `steamspy_tags`, dan `categories`.
 * **Penanganan Nilai Kosong**: Sebelum digabungkan, nilai kosong (NaN) pada kolom `genres`, `steamspy_tags`, dan `categories` diisi dengan string kosong (`''`). Langkah ini penting untuk memastikan proses penggabungan string berjalan lancar dan tidak ada data yang hilang karena nilai null.
-* **Vektorisasi TF-IDF**: Mengubah data teks pada kolom `content` menjadi representasi numerik dalam bentuk matriks vektor menggunakan `TfidfVectorizer`. TF-IDF (Term Frequency-Inverse Document Frequency) adalah teknik yang memberikan bobot pada setiap kata berdasarkan frekuensinya dalam satu dokumen (game) dan kelangkaannya di seluruh dokumen (semua game). Proses ini merupakan langkah akhir dalam persiapan data sebelum data dimasukkan ke model.
 * **Sampling Data**: Mengambil sampel sebanyak 5.000 data secara acak. Langkah ini dilakukan untuk mengelola penggunaan memori (RAM) dan memastikan proses pemodelan berjalan lebih efisien tanpa mengorbankan representasi data secara signifikan.
+* **Vektorisasi TF-IDF**: Mengubah data teks pada kolom `content` menjadi representasi numerik dalam bentuk matriks vektor menggunakan `TfidfVectorizer`. TF-IDF (Term Frequency-Inverse Document Frequency) adalah teknik yang memberikan bobot pada setiap kata berdasarkan frekuensinya dalam satu dokumen (game) dan kelangkaannya di seluruh dokumen (semua game). Proses ini merupakan langkah akhir dalam persiapan data sebelum data dimasukkan ke model.
+
 
 Berikut adalah kode yang mencerminkan langkah-langkah di atas:
 
 ```python
-# Hapus baris dengan nilai penting yang kosong
+# 1. Hapus baris dengan nilai penting yang kosong
 df = df.dropna(subset=['name', 'genres', 'steamspy_tags'])
 
-# Konversi tipe data tanggal
+# 2. Konversi tipe data tanggal
 df['release_date'] = pd.to_datetime(df['release_date'], errors='coerce')
 
-# Gabungkan fitur konten dengan penanganan nilai kosong
+# 3. Gabungkan fitur konten dengan penanganan nilai kosong
 df['content'] = (
     df['genres'].fillna('') + ' ' +
     df['steamspy_tags'].fillna('') + ' ' +
     df['categories'].fillna('')
 )
 
-# Ambil sampel 5000 data untuk efisiensi
+# 4. Ambil sampel 5000 data untuk efisiensi
 df_final = df.sample(5000, random_state=42).reset_index(drop=True)
 
-# Lakukan TF-IDF Vectorization
+# 5. Lakukan TF-IDF Vectorization pada data hasil sampling
 from sklearn.feature_extraction.text import TfidfVectorizer
 tfidf = TfidfVectorizer(stop_words='english', max_features=5000)
 tfidf_matrix = tfidf.fit_transform(df_final['content'])
